@@ -27,7 +27,7 @@ func NewService(repo *repo.Queries, db *pgx.Conn) Service {
 }
 
 func (s *svc) PlaceOrder(ctx context.Context, tempOrder createOrderParams) (repo.Order, error) {
-	// validate payload
+
 	if tempOrder.CustomerID == 0 {
 		return repo.Order{}, fmt.Errorf("customer ID is required")
 	}
@@ -43,13 +43,11 @@ func (s *svc) PlaceOrder(ctx context.Context, tempOrder createOrderParams) (repo
 
 	qtx := s.repo.WithTx(tx)
 
-	// create an order
 	order, err := qtx.CreateOrder(ctx, tempOrder.CustomerID)
 	if err != nil {
 		return repo.Order{}, err
 	}
 
-	// look for the product if exists
 	for _, item := range tempOrder.Items {
 		product, err := qtx.FindProductByID(ctx, item.ProductID)
 		if err != nil {
@@ -60,7 +58,6 @@ func (s *svc) PlaceOrder(ctx context.Context, tempOrder createOrderParams) (repo
 			return repo.Order{}, ErrProductNoStock
 		}
 
-		// create order item
 		_, err = qtx.CreateOrderItem(ctx, repo.CreateOrderItemParams{
 			OrderID:    order.ID,
 			ProductID:  item.ProductID,
@@ -71,7 +68,6 @@ func (s *svc) PlaceOrder(ctx context.Context, tempOrder createOrderParams) (repo
 			return repo.Order{}, err
 		}
 
-		// Challenge: Update the product stock quantity
 	}
 
 	tx.Commit(ctx)
