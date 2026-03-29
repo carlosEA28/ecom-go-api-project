@@ -85,5 +85,6 @@ func main() {
 		ctx.Export("ecsServiceName", ecsServiceOutput.Service.ServiceArn)
 
 		return nil
+
 	})
 }
