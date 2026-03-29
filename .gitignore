@@ -1,0 +1,69 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Go workspace file
+go.work
+
+# Dependency directories
+vendor/
+
+# Go mod cache
+/go/pkg/mod/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Pulumi
+Pulumi.*.yaml
+.pulumi/
+*.backup
+
+# Build output
+ecom-api
+ecom-api.exe
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# Local development
+docker-compose.override.yaml
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# AWS
+*.pem
+.aws/
+
+# Migrations backup
+*.sql.bak
