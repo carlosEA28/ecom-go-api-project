@@ -33,7 +33,7 @@ func main() {
 		loadBalancerOutput, err := resources.CreateLoadBalancer(
 			ctx,
 			publicSubnetID,
-			securityGroups.LBSecurityGroup.ID(),
+			securityGroups.LBSecurityGroup.ID().ToStringOutput(),
 		)
 		if err != nil {
 			return fmt.Errorf("erro ao criar Load Balancer: %w", err)
@@ -42,7 +42,7 @@ func main() {
 		rdsOutput, err := resources.CreateRDS(
 			ctx,
 			rdsSubnetID,
-			securityGroups.RDSSecurityGroup.ID(),
+			securityGroups.RDSSecurityGroup.ID().ToStringOutput(),
 		)
 		if err != nil {
 			return fmt.Errorf("erro ao criar RDS: %w", err)
@@ -58,7 +58,7 @@ func main() {
 			ecsClusterOutput.Cluster,
 			ecrOutput.ImageURI,
 			ecsSubnetID,
-			securityGroups.ECSSecurityGroup.ID(),
+			securityGroups.ECSSecurityGroup.ID().ToStringOutput(),
 			loadBalancerOutput.LoadBalancer,
 		)
 		if err != nil {
@@ -82,7 +82,7 @@ func main() {
 		ctx.Export("rdsUsername", rdsOutput.Username)
 
 		ctx.Export("ecsClusterArn", ecsClusterOutput.Cluster.Arn)
-		ctx.Export("ecsServiceName", ecsServiceOutput.Service.ServiceArn)
+		ctx.Export("ecsServiceArn", ecsServiceOutput.Service.Service.Arn())
 
 		return nil
 

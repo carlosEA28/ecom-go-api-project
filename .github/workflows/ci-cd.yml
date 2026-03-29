@@ -159,7 +159,7 @@ jobs:
       
       - name: Update ECS service
         run: |
-          SERVICE_ARN=$(cd infra/pulumi && pulumi stack output ecsServiceName)
+          SERVICE_ARN=$(cd infra/pulumi && pulumi stack output ecsServiceArn)
           CLUSTER_ARN=$(cd infra/pulumi && pulumi stack output ecsClusterArn)
           
           aws ecs update-service \
