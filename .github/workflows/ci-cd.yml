@@ -88,14 +88,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       
-      - name: Set up Pulumi
-        uses: pulumi/actions@v5
-        with:
-          command: login
-          cloud-url: file://.
-        env:
-          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
-      
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
@@ -103,7 +95,10 @@ jobs:
       
       - name: Deploy infrastructure with Pulumi
         working-directory: ./infra/pulumi
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
         run: |
+          pulumi login file://.
           pulumi stack select dev
           pulumi up --yes
       
