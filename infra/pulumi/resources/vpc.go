@@ -13,22 +13,22 @@ type VPCOutput struct {
 
 func CreateVPC(ctx *pulumi.Context) (*VPCOutput, error) {
 	vpc, err := awsxec2.NewVpc(ctx, "vpc", &awsxec2.VpcArgs{
-		CidrBlock: pulumi.StringRef("10.0.0.0/24"),
+		CidrBlock: pulumi.StringRef("10.0.0.0/16"),
 		SubnetSpecs: []awsxec2.SubnetSpecArgs{
 			{
 				Name:     pulumi.StringRef("public-subnet-loadBalancer"),
 				Type:     awsxec2.SubnetTypePublic,
-				CidrMask: pulumi.IntRef(22),
+				CidrMask: pulumi.IntRef(24),
 			},
 			{
 				Name:     pulumi.StringRef("ECS-cluster-subnetprivate-subnet"),
 				Type:     awsxec2.SubnetTypePrivate,
-				CidrMask: pulumi.IntRef(22),
+				CidrMask: pulumi.IntRef(24),
 			},
 			{
 				Name:     pulumi.StringRef("RDS-subnetprivate-subnet"),
 				Type:     awsxec2.SubnetTypePrivate,
-				CidrMask: pulumi.IntRef(22),
+				CidrMask: pulumi.IntRef(24),
 			},
 		},
 		NatGateways: &awsxec2.NatGatewayConfigurationArgs{

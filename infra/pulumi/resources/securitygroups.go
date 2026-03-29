@@ -21,7 +21,7 @@ func CreateSecurityGroups(ctx *pulumi.Context, vpcID pulumi.StringOutput) (*Secu
 				ToPort:   pulumi.Int(8080),
 				Protocol: pulumi.String("tcp"),
 				CidrBlocks: pulumi.StringArray{
-					pulumi.String("10.0.0.0/24"),
+					pulumi.String("10.0.0.0/16"),
 				},
 			},
 		},
