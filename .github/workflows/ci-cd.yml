@@ -93,6 +93,9 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
       
+      - name: Install Pulumi
+        run: curl -fsSL https://get.pulumi.com | sh && echo "$HOME/.pulumi/bin" >> $GITHUB_PATH
+      
       - name: Deploy infrastructure with Pulumi
         working-directory: ./infra/pulumi
         env:
