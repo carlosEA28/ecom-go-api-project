@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	repo "github.com/sikozonpc/ecom/internal/adapters/postgresql/sqlc"
+	repo "github.com/carlosEA28/ecom/internal/adapters/postgresql/sqlc"
 )
 
 var (

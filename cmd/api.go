@@ -8,9 +8,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5"
-	repo "github.com/sikozonpc/ecom/internal/adapters/postgresql/sqlc"
-	"github.com/sikozonpc/ecom/internal/orders"
-	"github.com/sikozonpc/ecom/internal/products"
+	repo "github.com/carlosEA28/ecom/internal/adapters/postgresql/sqlc"
+	"github.com/carlosEA28/ecom/internal/orders"
+	"github.com/carlosEA28/ecom/internal/products"
 )
 
 func (app *application) mount() http.Handler {

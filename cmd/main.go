@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/carlosEA28/ecom/internal/env"
 	"github.com/jackc/pgx/v5"
-	"github.com/sikozonpc/ecom/internal/env"
 )
 
 func main() {
@@ -34,7 +34,7 @@ func main() {
 
 	api := application{
 		config: cfg,
-		db: conn,
+		db:     conn,
 	}
 	if err := api.run(api.mount()); err != nil {
 		slog.Error("server failed to start", "error", err)

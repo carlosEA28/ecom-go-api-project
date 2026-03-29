@@ -1,4 +1,4 @@
-module github.com/sikozonpc/ecom
+module github.com/carlosEA28/ecom
 
 go 1.25.3
 

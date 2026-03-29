@@ -3,7 +3,7 @@ package orders
 import (
 	"context"
 
-	repo "github.com/sikozonpc/ecom/internal/adapters/postgresql/sqlc"
+	repo "github.com/carlosEA28/ecom/internal/adapters/postgresql/sqlc"
 )
 
 type orderItem struct {

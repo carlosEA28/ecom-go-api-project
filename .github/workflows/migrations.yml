@@ -1,0 +1,124 @@
+name: Database Migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment (dev, staging, prod)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      action:
+        description: 'Migration action'
+        required: true
+        default: 'up'
+        type: choice
+        options:
+          - up
+          - down
+          - status
+          - redo
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  migrations:
+    name: Run Database Migrations - ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Set up Pulumi
+        uses: pulumi/actions@v5
+        with:
+          command: login
+          cloud-url: s3://ecom-pulumi-stack
+      
+      - name: Get RDS Endpoint from Pulumi Stack
+        id: get-rds
+        working-directory: ./infra/pulumi
+        run: |
+          pulumi stack select ${{ github.event.inputs.environment }}
+          
+          RDS_ENDPOINT=$(pulumi stack output rdsEndpoint)
+          RDS_PORT=$(pulumi stack output rdsPort)
+          RDS_DATABASE=$(pulumi stack output rdsDatabase)
+          RDS_USERNAME=$(pulumi stack output rdsUsername)
+          
+          echo "endpoint=$RDS_ENDPOINT" >> $GITHUB_OUTPUT
+          echo "port=$RDS_PORT" >> $GITHUB_OUTPUT
+          echo "database=$RDS_DATABASE" >> $GITHUB_OUTPUT
+          echo "username=$RDS_USERNAME" >> $GITHUB_OUTPUT
+      
+      - name: Install Goose CLI
+        run: go install github.com/pressly/goose/v3/cmd/goose@latest
+      
+      - name: Wait for RDS availability
+        run: |
+          apt-get update && apt-get install -y netcat-traditional
+          for i in {1..60}; do
+            if nc -z ${{ steps.get-rds.outputs.endpoint }} ${{ steps.get-rds.outputs.port }}; then
+              echo "✓ RDS is available"
+              exit 0
+            fi
+            echo "⏳ Waiting for RDS... ($i/60)"
+            sleep 5
+          done
+          echo "✗ RDS failed to become available"
+          exit 1
+      
+      - name: Run migrations - ${{ github.event.inputs.action }}
+        working-directory: ./internal/adapters/postgresql
+        run: |
+          GOOSE_DBSTRING="host=${{ steps.get-rds.outputs.endpoint }} \
+                          port=${{ steps.get-rds.outputs.port }} \
+                          user=${{ steps.get-rds.outputs.username }} \
+                          password=${{ secrets.RDS_PASSWORD }} \
+                          dbname=${{ steps.get-rds.outputs.database }} \
+                          sslmode=require"
+          
+          case "${{ github.event.inputs.action }}" in
+            up)
+              echo "⬆️  Running UP migrations..."
+              goose postgres "$GOOSE_DBSTRING" up
+              ;;
+            down)
+              echo "⬇️  Running DOWN migrations..."
+              goose postgres "$GOOSE_DBSTRING" down
+              ;;
+            status)
+              echo "📊 Migration status..."
+              goose postgres "$GOOSE_DBSTRING" status
+              ;;
+            redo)
+              echo "🔄 Running REDO (down + up)..."
+              goose postgres "$GOOSE_DBSTRING" redo
+              ;;
+          esac
+      
+      - name: Verify migrations
+        working-directory: ./internal/adapters/postgresql
+        run: |
+          GOOSE_DBSTRING="host=${{ steps.get-rds.outputs.endpoint }} \
+                          port=${{ steps.get-rds.outputs.port }} \
+                          user=${{ steps.get-rds.outputs.username }} \
+                          password=${{ secrets.RDS_PASSWORD }} \
+                          dbname=${{ steps.get-rds.outputs.database }} \
+                          sslmode=require"
+          
+          echo "✓ Migration status after ${{ github.event.inputs.action }}:"
+          goose postgres "$GOOSE_DBSTRING" status
