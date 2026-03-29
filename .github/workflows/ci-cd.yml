@@ -67,12 +67,6 @@ jobs:
       
       - name: Build application
         run: go build -v -o ecom-api ./cmd
-      
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: ecom-api-build
-          path: ecom-api
 
   deploy:
     name: Deploy Infrastructure & Run Migrations
