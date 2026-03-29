@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/carlosEA28/ecom/infra/pulumi/resources"
+	"project/resources"
 
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
