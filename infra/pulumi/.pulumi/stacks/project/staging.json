@@ -1,0 +1,20 @@
+{
+    "version": 3,
+    "checkpoint": {
+        "stack": "organization/project/staging",
+        "latest": {
+            "manifest": {
+                "time": "2026-03-29T18:20:36.4735576-03:00",
+                "magic": "a2704acabdbe6ad918c0efb801f982cbadd3fc943c290cb75d9212237b60ce98",
+                "version": "v3.226.0"
+            },
+            "secrets_providers": {
+                "type": "passphrase",
+                "state": {
+                    "salt": "v1:B65OzwKvAsU=:v1:1F4KvvyZDcUo0Ir0:3odGEOvFH1hbhzvdmY/SVosCw7kD0Q=="
+                }
+            },
+            "metadata": {}
+        }
+    }
+}

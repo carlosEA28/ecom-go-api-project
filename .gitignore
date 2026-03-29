@@ -36,10 +36,10 @@ vendor/
 
 # Pulumi
 Pulumi.*.yaml
-.pulumi/
-*.backup
 .pulumi_passphrase.txt
 .pulumi_passphrase
+# Allow Pulumi stacks in infra/pulumi
+!infra/pulumi/.pulumi/
 
 # Build output
 ecom-api
