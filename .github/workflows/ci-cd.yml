@@ -7,8 +7,9 @@ on:
     branches: [ main, develop ]
 
 env:
-  GO_VERSION: '1.25.3'
+  GO_VERSION: '1.25.6'
   PULUMI_VERSION: 'v3'
+  AWS_REGION: sa-east-1
 
 jobs:
   test:
@@ -80,7 +81,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     env:
-      AWS_REGION: us-east-1
+      AWS_REGION: sa-east-1
     
     steps:
       - name: Checkout code
@@ -97,7 +98,9 @@ jobs:
         uses: pulumi/actions@v5
         with:
           command: login
-          cloud-url: s3://ecom-pulumi-stack
+          cloud-url: file://.
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
       
       - name: Set up Go
         uses: actions/setup-go@v4

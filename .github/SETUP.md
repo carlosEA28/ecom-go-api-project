@@ -30,11 +30,12 @@ Value: postgres123!
 ```
 (Deve ser a mesma definida em `infra/pulumi/resources/rds.go` linha 38)
 
-#### Pulumi Stack (Opcional, se não usar S3)
+#### Pulumi Passphrase
 ```
-Name: PULUMI_ACCESS_TOKEN
-Value: seu-token-pulumi
+Name: PULUMI_CONFIG_PASSPHRASE
+Value: 08h0gEZTuIAwy7jxIp42NcyovBQqixiY
 ```
+(Esta é a passphrase gerada para encriptar os secrets do Pulumi)
 
 ### Passo 3: Estrutura de Secrets Recomendada
 
@@ -43,7 +44,7 @@ GitHub Secrets:
 ├── AWS_ACCESS_KEY_ID
 ├── AWS_SECRET_ACCESS_KEY
 ├── RDS_PASSWORD
-└── PULUMI_ACCESS_TOKEN (opcional)
+└── PULUMI_CONFIG_PASSPHRASE
 ```
 
 ## 📋 Variáveis de Ambiente no Workflow
@@ -51,12 +52,12 @@ GitHub Secrets:
 As seguintes variáveis estão configuradas nos workflows:
 
 ### `ci-cd.yml`
-- `GO_VERSION`: 1.25.3
+- `GO_VERSION`: 1.25.6
 - `PULUMI_VERSION`: v3
-- `AWS_REGION`: us-east-1
+- `AWS_REGION`: sa-east-1 (São Paulo)
 
 ### `migrations.yml`
-- `AWS_REGION`: us-east-1
+- `AWS_REGION`: sa-east-1 (São Paulo)
 
 ## 🔑 Como Gerar Credenciais AWS
 
@@ -214,6 +215,44 @@ act -j build
 3. ✅ Monitore os logs na aba Actions
 4. ✅ Valide que infraestrutura foi criada no AWS
 5. ✅ Verifique que migrations foram aplicadas
+
+## 📦 Configuração do Pulumi (Local Backend)
+
+### Stacks Criadas
+
+O repositório foi configurado com 3 stacks Pulumi usando backend local:
+
+- **dev**: Environment de desenvolvimento
+- **staging**: Environment de staging
+- **prod**: Environment de produção
+
+Todos os stacks usam a região **sa-east-1** (São Paulo).
+
+### Arquivo de Passphrase
+
+A passphrase para encriptar os secrets do Pulumi está armazenada em:
+- Local: `.pulumi_passphrase.txt` (não comitado no git)
+- GitHub: Secret `PULUMI_CONFIG_PASSPHRASE` (necessário para CI/CD)
+
+### Usando Pulumi Localmente
+
+```bash
+# Definir passphrase
+export PULUMI_CONFIG_PASSPHRASE=$(cat .pulumi_passphrase.txt)
+
+# Listar stacks
+cd infra/pulumi
+pulumi stack ls
+
+# Selecionar stack
+pulumi stack select dev
+
+# Ver configuração
+pulumi config
+
+# Fazer deploy
+pulumi up
+```
 
 ## 📞 Documentação Útil
 

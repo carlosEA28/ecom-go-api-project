@@ -38,6 +38,8 @@ vendor/
 Pulumi.*.yaml
 .pulumi/
 *.backup
+.pulumi_passphrase.txt
+.pulumi_passphrase
 
 # Build output
 ecom-api
