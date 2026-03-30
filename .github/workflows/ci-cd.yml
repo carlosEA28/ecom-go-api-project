@@ -54,11 +54,11 @@ jobs:
         env:
           GOOSE_DBSTRING: host=localhost port=5432 user=postgres password=postgres dbname=ecom sslmode=disable
 
-      - name: Run linter
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: latest
-          args: --timeout=5m
+       - name: Run linter
+         uses: golangci/golangci-lint-action@v3
+         with:
+           version: v1.65.0
+           args: --timeout=5m --out-format=colored-line-number
 
       - name: Check formatting
         run: |
