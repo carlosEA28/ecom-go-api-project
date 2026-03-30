@@ -16,7 +16,7 @@ func main() {
 			return fmt.Errorf("erro ao criar VPC: %w", err)
 		}
 
-		securityGroups, err := resources.CreateSecurityGroups(ctx, vpcOutput.VPC.VpcId)
+		securityGroups, err := resources.CreateSecurityGroups(ctx, vpcOutput.VPC.ID().ToStringOutput())
 		if err != nil {
 			return fmt.Errorf("erro ao criar Security Groups: %w", err)
 		}
@@ -65,7 +65,7 @@ func main() {
 		}
 
 		// Exports
-		ctx.Export("vpcId", vpcOutput.VPC.VpcId)
+		ctx.Export("vpcId", vpcOutput.VPC.ID())
 
 		ctx.Export("ecrRepositoryUrl", resources.GetECRRepositoryUrl(ecrOutput))
 		ctx.Export("ecrImageUri", ecrOutput.ImageURI)
