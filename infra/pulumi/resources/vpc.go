@@ -15,22 +15,26 @@ func CreateVPC(ctx *pulumi.Context) (*VPCOutput, error) {
 	// Create VPC with explicit multi-AZ subnet configuration
 	vpc, err := awsxec2.NewVpc(ctx, "vpc", &awsxec2.VpcArgs{
 		CidrBlock: pulumi.StringRef("10.0.0.0/16"),
-		// Explicitly define subnets across multiple AZs
+		// Explicitly define subnets across multiple AZs with unique names
 		SubnetSpecs: []awsxec2.SubnetSpecArgs{
 			{
 				Type:     awsxec2.SubnetTypePublic,
+				Name:     pulumi.StringRef("public-1"),
 				CidrMask: pulumi.IntRef(24),
 			},
 			{
 				Type:     awsxec2.SubnetTypePublic,
+				Name:     pulumi.StringRef("public-2"),
 				CidrMask: pulumi.IntRef(24),
 			},
 			{
 				Type:     awsxec2.SubnetTypePrivate,
+				Name:     pulumi.StringRef("private-1"),
 				CidrMask: pulumi.IntRef(24),
 			},
 			{
 				Type:     awsxec2.SubnetTypePrivate,
+				Name:     pulumi.StringRef("private-2"),
 				CidrMask: pulumi.IntRef(24),
 			},
 		},
