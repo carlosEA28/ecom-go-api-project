@@ -12,12 +12,30 @@ type VPCOutput struct {
 }
 
 func CreateVPC(ctx *pulumi.Context) (*VPCOutput, error) {
-	// Create VPC with multi-AZ setup for RDS requirements
+	// Create VPC with explicit multi-AZ subnet configuration
 	vpc, err := awsxec2.NewVpc(ctx, "vpc", &awsxec2.VpcArgs{
 		CidrBlock: pulumi.StringRef("10.0.0.0/16"),
-		// Use default strategy which creates subnets in multiple AZs
+		// Explicitly define subnets across multiple AZs
+		SubnetSpecs: []awsxec2.SubnetSpecArgs{
+			{
+				Type:     awsxec2.SubnetTypePublic,
+				CidrMask: pulumi.IntRef(24),
+			},
+			{
+				Type:     awsxec2.SubnetTypePublic,
+				CidrMask: pulumi.IntRef(24),
+			},
+			{
+				Type:     awsxec2.SubnetTypePrivate,
+				CidrMask: pulumi.IntRef(24),
+			},
+			{
+				Type:     awsxec2.SubnetTypePrivate,
+				CidrMask: pulumi.IntRef(24),
+			},
+		},
 		NatGateways: &awsxec2.NatGatewayConfigurationArgs{
-			Strategy: awsxec2.NatGatewayStrategyOnePerAz, // One NAT per AZ
+			Strategy: awsxec2.NatGatewayStrategyOnePerAz,
 		},
 	})
 
