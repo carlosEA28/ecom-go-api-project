@@ -4,7 +4,7 @@
         "stack": "organization/project/dev",
         "latest": {
             "manifest": {
-                "time": "2026-03-29T21:25:44.158539-03:00",
+                "time": "2026-03-29T21:24:33.0078659-03:00",
                 "magic": "a2704acabdbe6ad918c0efb801f982cbadd3fc943c290cb75d9212237b60ce98",
                 "version": "v3.226.0"
             },
@@ -116,11 +116,31 @@
                     },
                     "parent": "urn:pulumi:dev::project::pulumi:pulumi:Stack::project-dev",
                     "provider": "urn:pulumi:dev::project::pulumi:providers:aws::default_7_23_0::40b52919-4855-449e-8bee-c7ca3c3a9003",
-                    "propertyDependencies": {
-                        "forceDelete": []
-                    },
                     "created": "2026-03-30T00:19:31.9386732Z",
                     "modified": "2026-03-30T00:24:31.9227852Z"
+                },
+                {
+                    "urn": "urn:pulumi:dev::project::pulumi:providers:awsx::default_3_3_1",
+                    "custom": true,
+                    "id": "23614668-dae3-4517-8df5-28a68c604fb4",
+                    "type": "pulumi:providers:awsx",
+                    "inputs": {
+                        "__internal": {},
+                        "version": "3.3.1"
+                    },
+                    "outputs": {
+                        "version": "3.3.1"
+                    },
+                    "created": "2026-03-30T00:19:38.0953732Z",
+                    "modified": "2026-03-30T00:19:38.0953732Z"
+                },
+                {
+                    "urn": "urn:pulumi:dev::project::awsx:ec2:Vpc::vpc",
+                    "custom": false,
+                    "type": "awsx:ec2:Vpc",
+                    "parent": "urn:pulumi:dev::project::pulumi:pulumi:Stack::project-dev",
+                    "created": "2026-03-30T00:19:38.3454771Z",
+                    "modified": "2026-03-30T00:19:38.3454771Z"
                 },
                 {
                     "urn": "urn:pulumi:dev::project::aws:ecs/cluster:Cluster::cluster",
@@ -188,29 +208,6 @@
                     "provider": "urn:pulumi:dev::project::pulumi:providers:aws::default_7_23_0::40b52919-4855-449e-8bee-c7ca3c3a9003",
                     "created": "2026-03-30T00:19:42.0348391Z",
                     "modified": "2026-03-30T00:24:31.8577774Z"
-                },
-                {
-                    "urn": "urn:pulumi:dev::project::pulumi:providers:awsx::default_3_3_1",
-                    "custom": true,
-                    "id": "23614668-dae3-4517-8df5-28a68c604fb4",
-                    "type": "pulumi:providers:awsx",
-                    "inputs": {
-                        "__internal": {},
-                        "version": "3.3.1"
-                    },
-                    "outputs": {
-                        "version": "3.3.1"
-                    },
-                    "created": "2026-03-30T00:19:38.0953732Z",
-                    "modified": "2026-03-30T00:19:38.0953732Z"
-                },
-                {
-                    "urn": "urn:pulumi:dev::project::awsx:ec2:Vpc::vpc",
-                    "custom": false,
-                    "type": "awsx:ec2:Vpc",
-                    "parent": "urn:pulumi:dev::project::pulumi:pulumi:Stack::project-dev",
-                    "created": "2026-03-30T00:19:38.3454771Z",
-                    "modified": "2026-03-30T00:19:38.3454771Z"
                 },
                 {
                     "urn": "urn:pulumi:dev::project::pulumi:providers:aws::default_7_15_0",
@@ -294,10 +291,6 @@
                     },
                     "parent": "urn:pulumi:dev::project::awsx:ec2:Vpc::vpc",
                     "provider": "urn:pulumi:dev::project::pulumi:providers:aws::default_7_15_0::cb1e08a2-ecb2-4d35-8f2d-749401acf4bf",
-                    "propertyDependencies": {
-                        "cidrBlock": [],
-                        "tags": []
-                    },
                     "created": "2026-03-30T00:19:48.3751936Z",
                     "modified": "2026-03-30T00:19:48.3751936Z"
                 },
@@ -348,211 +341,12 @@
                     ],
                     "provider": "urn:pulumi:dev::project::pulumi:providers:aws::default_7_15_0::cb1e08a2-ecb2-4d35-8f2d-749401acf4bf",
                     "propertyDependencies": {
-                        "tags": [],
                         "vpcId": [
                             "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc::vpc"
                         ]
                     },
                     "created": "2026-03-30T00:19:49.4571448Z",
                     "modified": "2026-03-30T00:19:49.4571448Z"
-                },
-                {
-                    "urn": "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc$aws:ec2/subnet:Subnet::vpc-public-1",
-                    "custom": true,
-                    "id": "subnet-01378ea20ef88b347",
-                    "type": "aws:ec2/subnet:Subnet",
-                    "inputs": {
-                        "__defaults": [
-                            "enableDns64",
-                            "enableResourceNameDnsARecordOnLaunch",
-                            "enableResourceNameDnsAaaaRecordOnLaunch",
-                            "ipv6Native"
-                        ],
-                        "assignIpv6AddressOnCreation": false,
-                        "availabilityZone": "sa-east-1a",
-                        "cidrBlock": "10.0.32.0/20",
-                        "enableDns64": false,
-                        "enableResourceNameDnsARecordOnLaunch": false,
-                        "enableResourceNameDnsAaaaRecordOnLaunch": false,
-                        "ipv6Native": false,
-                        "mapPublicIpOnLaunch": true,
-                        "tags": {
-                            "Name": "vpc-public-1",
-                            "SubnetType": "Public"
-                        },
-                        "tagsAll": {
-                            "Name": "vpc-public-1",
-                            "SubnetType": "Public"
-                        },
-                        "vpcId": "vpc-0f48b155868b36ece"
-                    },
-                    "outputs": {
-                        "__meta": "{\"e2bfb730-ecaa-11e6-8f88-34363bc7c4c0\":{\"create\":600000000000,\"delete\":1200000000000},\"schema_version\":\"1\"}",
-                        "__pulumi_raw_state_delta": {
-                            "obj": {
-                                "ps": {
-                                    "tags": {
-                                        "map": {}
-                                    },
-                                    "tagsAll": {
-                                        "map": {}
-                                    }
-                                }
-                            }
-                        },
-                        "arn": "arn:aws:ec2:sa-east-1:235494777438:subnet/subnet-01378ea20ef88b347",
-                        "assignIpv6AddressOnCreation": false,
-                        "availabilityZone": "sa-east-1a",
-                        "availabilityZoneId": "sae1-az1",
-                        "cidrBlock": "10.0.32.0/20",
-                        "customerOwnedIpv4Pool": "",
-                        "enableDns64": false,
-                        "enableLniAtDeviceIndex": 0,
-                        "enableResourceNameDnsARecordOnLaunch": false,
-                        "enableResourceNameDnsAaaaRecordOnLaunch": false,
-                        "id": "subnet-01378ea20ef88b347",
-                        "ipv6CidrBlock": "",
-                        "ipv6CidrBlockAssociationId": "",
-                        "ipv6Native": false,
-                        "mapCustomerOwnedIpOnLaunch": false,
-                        "mapPublicIpOnLaunch": true,
-                        "outpostArn": "",
-                        "ownerId": "235494777438",
-                        "privateDnsHostnameTypeOnLaunch": "ip-name",
-                        "region": "sa-east-1",
-                        "tags": {
-                            "Name": "vpc-public-1",
-                            "SubnetType": "Public"
-                        },
-                        "tagsAll": {
-                            "Name": "vpc-public-1",
-                            "SubnetType": "Public"
-                        },
-                        "vpcId": "vpc-0f48b155868b36ece"
-                    },
-                    "parent": "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc::vpc",
-                    "dependencies": [
-                        "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc::vpc"
-                    ],
-                    "provider": "urn:pulumi:dev::project::pulumi:providers:aws::default_7_15_0::cb1e08a2-ecb2-4d35-8f2d-749401acf4bf",
-                    "propertyDependencies": {
-                        "assignIpv6AddressOnCreation": [],
-                        "availabilityZone": [],
-                        "cidrBlock": [],
-                        "mapPublicIpOnLaunch": [],
-                        "tags": [],
-                        "vpcId": [
-                            "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc::vpc"
-                        ]
-                    },
-                    "created": "2026-03-30T00:25:44.1338966Z",
-                    "modified": "2026-03-30T00:25:44.1338966Z",
-                    "stackTrace": [
-                        {},
-                        {},
-                        {},
-                        {},
-                        {}
-                    ]
-                },
-                {
-                    "urn": "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc$aws:ec2/subnet:Subnet::vpc-public-3",
-                    "custom": true,
-                    "id": "subnet-04af83e51baee6fdb",
-                    "type": "aws:ec2/subnet:Subnet",
-                    "inputs": {
-                        "__defaults": [
-                            "enableDns64",
-                            "enableResourceNameDnsARecordOnLaunch",
-                            "enableResourceNameDnsAaaaRecordOnLaunch",
-                            "ipv6Native"
-                        ],
-                        "assignIpv6AddressOnCreation": false,
-                        "availabilityZone": "sa-east-1c",
-                        "cidrBlock": "10.0.160.0/20",
-                        "enableDns64": false,
-                        "enableResourceNameDnsARecordOnLaunch": false,
-                        "enableResourceNameDnsAaaaRecordOnLaunch": false,
-                        "ipv6Native": false,
-                        "mapPublicIpOnLaunch": true,
-                        "tags": {
-                            "Name": "vpc-public-3",
-                            "SubnetType": "Public"
-                        },
-                        "tagsAll": {
-                            "Name": "vpc-public-3",
-                            "SubnetType": "Public"
-                        },
-                        "vpcId": "vpc-0f48b155868b36ece"
-                    },
-                    "outputs": {
-                        "__meta": "{\"e2bfb730-ecaa-11e6-8f88-34363bc7c4c0\":{\"create\":600000000000,\"delete\":1200000000000},\"schema_version\":\"1\"}",
-                        "__pulumi_raw_state_delta": {
-                            "obj": {
-                                "ps": {
-                                    "tags": {
-                                        "map": {}
-                                    },
-                                    "tagsAll": {
-                                        "map": {}
-                                    }
-                                }
-                            }
-                        },
-                        "arn": "arn:aws:ec2:sa-east-1:235494777438:subnet/subnet-04af83e51baee6fdb",
-                        "assignIpv6AddressOnCreation": false,
-                        "availabilityZone": "sa-east-1c",
-                        "availabilityZoneId": "sae1-az3",
-                        "cidrBlock": "10.0.160.0/20",
-                        "customerOwnedIpv4Pool": "",
-                        "enableDns64": false,
-                        "enableLniAtDeviceIndex": 0,
-                        "enableResourceNameDnsARecordOnLaunch": false,
-                        "enableResourceNameDnsAaaaRecordOnLaunch": false,
-                        "id": "subnet-04af83e51baee6fdb",
-                        "ipv6CidrBlock": "",
-                        "ipv6CidrBlockAssociationId": "",
-                        "ipv6Native": false,
-                        "mapCustomerOwnedIpOnLaunch": false,
-                        "mapPublicIpOnLaunch": true,
-                        "outpostArn": "",
-                        "ownerId": "235494777438",
-                        "privateDnsHostnameTypeOnLaunch": "ip-name",
-                        "region": "sa-east-1",
-                        "tags": {
-                            "Name": "vpc-public-3",
-                            "SubnetType": "Public"
-                        },
-                        "tagsAll": {
-                            "Name": "vpc-public-3",
-                            "SubnetType": "Public"
-                        },
-                        "vpcId": "vpc-0f48b155868b36ece"
-                    },
-                    "parent": "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc::vpc",
-                    "dependencies": [
-                        "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc::vpc"
-                    ],
-                    "provider": "urn:pulumi:dev::project::pulumi:providers:aws::default_7_15_0::cb1e08a2-ecb2-4d35-8f2d-749401acf4bf",
-                    "propertyDependencies": {
-                        "assignIpv6AddressOnCreation": [],
-                        "availabilityZone": [],
-                        "cidrBlock": [],
-                        "mapPublicIpOnLaunch": [],
-                        "tags": [],
-                        "vpcId": [
-                            "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc::vpc"
-                        ]
-                    },
-                    "created": "2026-03-30T00:25:44.1531082Z",
-                    "modified": "2026-03-30T00:25:44.1531082Z",
-                    "stackTrace": [
-                        {},
-                        {},
-                        {},
-                        {},
-                        {}
-                    ]
                 },
                 {
                     "urn": "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc$aws:ec2/subnet:Subnet::vpc-RDS-subnetprivate-subnet-2",
@@ -1473,61 +1267,6 @@
                 }
             ],
             "pending_operations": [
-                {
-                    "resource": {
-                        "urn": "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc$aws:ec2/subnet:Subnet::vpc-public-2",
-                        "custom": true,
-                        "type": "aws:ec2/subnet:Subnet",
-                        "inputs": {
-                            "__defaults": [
-                                "enableDns64",
-                                "enableResourceNameDnsARecordOnLaunch",
-                                "enableResourceNameDnsAaaaRecordOnLaunch",
-                                "ipv6Native"
-                            ],
-                            "assignIpv6AddressOnCreation": false,
-                            "availabilityZone": "sa-east-1b",
-                            "cidrBlock": "10.0.96.0/20",
-                            "enableDns64": false,
-                            "enableResourceNameDnsARecordOnLaunch": false,
-                            "enableResourceNameDnsAaaaRecordOnLaunch": false,
-                            "ipv6Native": false,
-                            "mapPublicIpOnLaunch": true,
-                            "tags": {
-                                "Name": "vpc-public-2",
-                                "SubnetType": "Public"
-                            },
-                            "tagsAll": {
-                                "Name": "vpc-public-2",
-                                "SubnetType": "Public"
-                            },
-                            "vpcId": "vpc-0f48b155868b36ece"
-                        },
-                        "parent": "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc::vpc",
-                        "dependencies": [
-                            "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc::vpc"
-                        ],
-                        "provider": "urn:pulumi:dev::project::pulumi:providers:aws::default_7_15_0::cb1e08a2-ecb2-4d35-8f2d-749401acf4bf",
-                        "propertyDependencies": {
-                            "assignIpv6AddressOnCreation": [],
-                            "availabilityZone": [],
-                            "cidrBlock": [],
-                            "mapPublicIpOnLaunch": [],
-                            "tags": [],
-                            "vpcId": [
-                                "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc::vpc"
-                            ]
-                        },
-                        "stackTrace": [
-                            {},
-                            {},
-                            {},
-                            {},
-                            {}
-                        ]
-                    },
-                    "type": "creating"
-                },
                 {
                     "resource": {
                         "urn": "urn:pulumi:dev::project::awsx:ec2:Vpc$aws:ec2/vpc:Vpc$aws:ec2/subnet:Subnet$aws:ec2/natGateway:NatGateway::vpc-1",

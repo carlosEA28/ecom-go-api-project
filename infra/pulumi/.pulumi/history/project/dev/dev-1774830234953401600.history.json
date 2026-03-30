@@ -1,0 +1,37 @@
+{
+    "kind": "destroy",
+    "startTime": 1774830214,
+    "message": "Remove CI/CD and migrations workflows; update go.work.sum with new dependencies",
+    "environment": {
+        "exec.kind": "cli",
+        "git.author": "carlosEA28",
+        "git.author.email": "carloseaduarte28@gmail.com",
+        "git.committer": "carlosEA28",
+        "git.committer.email": "carloseaduarte28@gmail.com",
+        "git.dirty": "true",
+        "git.head": "fd7fb39a29380d0724492fac3286693356047478",
+        "git.headName": "refs/heads/main",
+        "pulumi.arch": "amd64",
+        "pulumi.env.PULUMI_CONFIG_PASSPHRASE": "set",
+        "pulumi.flag.yes": "true",
+        "pulumi.os": "windows",
+        "pulumi.version": "v3.226.0",
+        "stack.environments": "[]",
+        "updatePlan": "false",
+        "vcs.kind": "github.com",
+        "vcs.owner": "carlosEA28",
+        "vcs.repo": "ecom-go-api-project",
+        "vcs.root": "infra/pulumi"
+    },
+    "config": {
+        "pulumi:tags": {
+            "pulumi:template": "aws-go"
+        }
+    },
+    "version": 0,
+    "result": "failed",
+    "endTime": 1774830234,
+    "resourceChanges": {
+        "delete": 21
+    }
+}
