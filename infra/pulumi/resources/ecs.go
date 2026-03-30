@@ -31,7 +31,7 @@ func CreateECSFargateService(
 	ctx *pulumi.Context,
 	cluster *ecs.Cluster,
 	imageURI pulumi.StringOutput,
-	ecsSubnetID pulumi.Output,
+	ecsSubnetIDs pulumi.StringArrayOutput,
 	ecsSecurityGroupID pulumi.StringOutput,
 	loadBalancer *lb.ApplicationLoadBalancer,
 ) (*ECSServiceOutput, error) {
@@ -39,11 +39,7 @@ func CreateECSFargateService(
 		Cluster:                       cluster.Arn,
 		HealthCheckGracePeriodSeconds: pulumi.Int(300),
 		NetworkConfiguration: &ecs.ServiceNetworkConfigurationArgs{
-			Subnets: pulumi.StringArray{
-				ecsSubnetID.ApplyT(func(id interface{}) string {
-					return id.(string)
-				}).(pulumi.StringOutput),
-			},
+			Subnets: ecsSubnetIDs,
 			SecurityGroups: pulumi.StringArray{
 				ecsSecurityGroupID,
 			},
@@ -57,6 +53,7 @@ func CreateECSFargateService(
 				PortMappings: ecsx.TaskDefinitionPortMappingArray{
 					ecsx.TaskDefinitionPortMappingArgs{
 						ContainerPort: pulumi.Int(8080),
+						HostPort:      pulumi.Int(8080),
 						TargetGroup:   loadBalancer.DefaultTargetGroup,
 					},
 				},

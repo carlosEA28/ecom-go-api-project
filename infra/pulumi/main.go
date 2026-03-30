@@ -28,7 +28,6 @@ func main() {
 
 		// Use all public subnets for load balancer (multi-AZ)
 		// Use all private subnets for RDS and ECS (multi-AZ)
-		ecsSubnetID := vpcOutput.PrivateSubnets.Index(pulumi.Int(0))
 
 		loadBalancerOutput, err := resources.CreateLoadBalancer(
 			ctx,
@@ -57,7 +56,7 @@ func main() {
 			ctx,
 			ecsClusterOutput.Cluster,
 			ecrOutput.ImageURI,
-			ecsSubnetID,
+			vpcOutput.PrivateSubnets,
 			securityGroups.ECSSecurityGroup.ID().ToStringOutput(),
 			loadBalancerOutput.LoadBalancer,
 		)
@@ -67,7 +66,6 @@ func main() {
 
 		// Exports
 		ctx.Export("vpcId", vpcOutput.VPC.VpcId)
-		ctx.Export("ecsSubnetId", ecsSubnetID)
 
 		ctx.Export("ecrRepositoryUrl", resources.GetECRRepositoryUrl(ecrOutput))
 		ctx.Export("ecrImageUri", ecrOutput.ImageURI)
