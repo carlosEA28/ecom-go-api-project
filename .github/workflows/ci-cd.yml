@@ -157,6 +157,7 @@ jobs:
           PULUMI_STACK: ${{ secrets.PULUMI_STACK || 'dev' }}
         run: |
           pulumi stack select $PULUMI_STACK
+          pulumi refresh --yes --skip-preview || echo "Refresh skipped (first deployment)"
           pulumi up --yes --skip-preview
 
       - name: Export outputs
