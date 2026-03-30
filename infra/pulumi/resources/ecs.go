@@ -37,6 +37,10 @@ func CreateECSFargateService(
 	ecsSecurityGroupID pulumi.StringOutput,
 	loadBalancer *lb.ApplicationLoadBalancer,
 ) (*ECSServiceOutput, error) {
+	// NOTE: Update awslogs-region below if deploying to a different AWS region
+	// Supported values: us-east-1, sa-east-1, eu-west-1, ap-southeast-1, etc.
+	awsRegion := "us-east-1"
+
 	// Log group creation is handled externally or via Pulumi import
 	// This avoids conflicts if the log group was created manually
 	// The ECS task definition references "ecom-api-logs" directly
@@ -92,7 +96,7 @@ func CreateECSFargateService(
 						"logDriver": "awslogs",
 						"options": map[string]interface{}{
 							"awslogs-group":         "ecom-api-logs",
-							"awslogs-region":        "us-east-1",
+							"awslogs-region":        awsRegion,
 							"awslogs-stream-prefix": "ecs",
 						},
 					},
