@@ -87,7 +87,7 @@ func CreateECSFargateService(
 					"logConfiguration": map[string]interface{}{
 						"logDriver": "awslogs",
 						"options": map[string]interface{}{
-							"awslogs-group":         "/ecs/ecom-api",
+							"awslogs-group":         "ecom-api-logs",
 							"awslogs-region":        "us-east-1",
 							"awslogs-stream-prefix": "ecs",
 						},
