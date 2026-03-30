@@ -31,6 +31,7 @@ func main() {
 
 		loadBalancerOutput, err := resources.CreateLoadBalancer(
 			ctx,
+			vpcOutput.VPC.ID().ToStringOutput(),
 			vpcOutput.PublicSubnets,
 			securityGroups.LBSecurityGroup.ID().ToStringOutput(),
 		)
@@ -58,7 +59,7 @@ func main() {
 			ecrOutput.ImageURI,
 			vpcOutput.PrivateSubnets,
 			securityGroups.ECSSecurityGroup.ID().ToStringOutput(),
-			loadBalancerOutput.LoadBalancer,
+			loadBalancerOutput,
 		)
 		if err != nil {
 			return fmt.Errorf("erro ao criar ECS Fargate Service: %w", err)

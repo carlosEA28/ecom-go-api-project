@@ -143,14 +143,17 @@ func CreateVPC(ctx *pulumi.Context) (*VPCOutput, error) {
 			return nil, err
 		}
 
-		// Add route to NAT Gateway for private subnets
-		_, err = ec2.NewRoute(ctx, fmt.Sprintf("private-route-%d", i+1), &ec2.RouteArgs{
-			RouteTableId:         privateRt.ID(),
-			DestinationCidrBlock: pulumi.String("0.0.0.0/0"),
-			NatGatewayId:         natGw.ID(),
-		}, pulumi.DependsOn([]pulumi.Resource{natGw}))
-		if err != nil {
-			return nil, err
+		// Use first NAT Gateway for private route
+		if i == 0 {
+			// Add route to NAT Gateway for private subnets (only once)
+			_, err = ec2.NewRoute(ctx, "private-route", &ec2.RouteArgs{
+				RouteTableId:         privateRt.ID(),
+				DestinationCidrBlock: pulumi.String("0.0.0.0/0"),
+				NatGatewayId:         natGw.ID(),
+			}, pulumi.DependsOn([]pulumi.Resource{natGw}))
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 

@@ -1,33 +1,65 @@
 package resources
 
 import (
-	"github.com/pulumi/pulumi-awsx/sdk/v3/go/awsx/lb"
+	"github.com/pulumi/pulumi-aws/sdk/v7/go/aws/lb"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 type LoadBalancerOutput struct {
-	LoadBalancer *lb.ApplicationLoadBalancer
-	DNSName      pulumi.StringOutput
+	LoadBalancer   *lb.LoadBalancer
+	TargetGroup    *lb.TargetGroup
+	DNSName        pulumi.StringOutput
+	TargetGroupArn pulumi.StringOutput
 }
 
-func CreateLoadBalancer(ctx *pulumi.Context, publicSubnetIDs pulumi.StringArrayOutput, lbSecurityGroupID pulumi.StringOutput) (*LoadBalancerOutput, error) {
-	loadBalancer, err := lb.NewApplicationLoadBalancer(ctx, "lb", &lb.ApplicationLoadBalancerArgs{
-		Listener: &lb.ListenerArgs{
-			Port:     pulumi.Int(80),
-			Protocol: pulumi.String("HTTP"),
-		},
-		SubnetIds: publicSubnetIDs,
-		SecurityGroups: pulumi.StringArray{
-			lbSecurityGroupID,
+func CreateLoadBalancer(ctx *pulumi.Context, vpcID pulumi.StringOutput, publicSubnetIDs pulumi.StringArrayOutput, lbSecurityGroupID pulumi.StringOutput) (*LoadBalancerOutput, error) {
+	// Create Load Balancer
+	loadBalancer, err := lb.NewLoadBalancer(ctx, "lb", &lb.LoadBalancerArgs{
+		Internal:         pulumi.Bool(false),
+		LoadBalancerType: pulumi.String("application"),
+		SecurityGroups:   pulumi.StringArray{lbSecurityGroupID},
+		Subnets:          publicSubnetIDs,
+		Tags: pulumi.StringMap{
+			"Name": pulumi.String("ecom-api-lb"),
 		},
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
+	// Create Target Group
+	targetGroup, err2 := lb.NewTargetGroup(ctx, "lb", &lb.TargetGroupArgs{
+		Port:     pulumi.Int(8080),
+		Protocol: pulumi.String("HTTP"),
+		VpcId:    vpcID,
+		Tags: pulumi.StringMap{
+			"Name": pulumi.String("ecom-api-tg"),
+		},
+	})
+	if err2 != nil {
+		return nil, err2
+	}
+
+	// Create Listener
+	_, err3 := lb.NewListener(ctx, "lb", &lb.ListenerArgs{
+		LoadBalancerArn: loadBalancer.Arn,
+		Port:            pulumi.Int(80),
+		Protocol:        pulumi.String("HTTP"),
+		DefaultActions: lb.ListenerDefaultActionArray{
+			&lb.ListenerDefaultActionArgs{
+				Type:           pulumi.String("forward"),
+				TargetGroupArn: targetGroup.Arn,
+			},
+		},
+	})
+	if err3 != nil {
+		return nil, err3
+	}
+
 	return &LoadBalancerOutput{
-		LoadBalancer: loadBalancer,
-		DNSName:      loadBalancer.LoadBalancer.DnsName(),
+		LoadBalancer:   loadBalancer,
+		TargetGroup:    targetGroup,
+		DNSName:        loadBalancer.DnsName,
+		TargetGroupArn: targetGroup.Arn,
 	}, nil
 }

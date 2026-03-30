@@ -6,7 +6,6 @@ import (
 
 	"github.com/pulumi/pulumi-aws/sdk/v7/go/aws/ecs"
 	"github.com/pulumi/pulumi-aws/sdk/v7/go/aws/iam"
-	"github.com/pulumi/pulumi-awsx/sdk/v3/go/awsx/lb"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -35,7 +34,7 @@ func CreateECSFargateService(
 	imageURI pulumi.StringOutput,
 	ecsSubnetIDs pulumi.StringArrayOutput,
 	ecsSecurityGroupID pulumi.StringOutput,
-	loadBalancer *lb.ApplicationLoadBalancer,
+	lbOutput *LoadBalancerOutput,
 ) (*ECSServiceOutput, error) {
 	// NOTE: Update awslogs-region below if deploying to a different AWS region
 	// Supported values: us-east-1, sa-east-1, eu-west-1, ap-southeast-1, etc.
@@ -123,13 +122,13 @@ func CreateECSFargateService(
 		},
 		LoadBalancers: ecs.ServiceLoadBalancerArray{
 			&ecs.ServiceLoadBalancerArgs{
-				TargetGroupArn: loadBalancer.DefaultTargetGroup.Arn(),
+				TargetGroupArn: lbOutput.TargetGroupArn,
 				ContainerName:  pulumi.String("ecom-api"),
 				ContainerPort:  pulumi.Int(8080),
 			},
 		},
 		HealthCheckGracePeriodSeconds: pulumi.Int(300),
-	}, pulumi.DependsOn([]pulumi.Resource{loadBalancer}))
+	}, pulumi.DependsOn([]pulumi.Resource{lbOutput.LoadBalancer}))
 	if err != nil {
 		return nil, fmt.Errorf("error creating ECS service: %w", err)
 	}
