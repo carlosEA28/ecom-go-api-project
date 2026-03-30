@@ -93,9 +93,9 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
       
-      - name: Install Pulumi
-        run: curl -fsSL https://get.pulumi.com | sh && echo "$HOME/.pulumi/bin" >> $GITHUB_PATH
-      
+       - name: Install Pulumi
+         run: curl -fsSL https://get.pulumi.com | sh && echo "$HOME/.pulumi/bin" >> $GITHUB_PATH
+       
        - name: Deploy infrastructure with Pulumi
          working-directory: ./infra/pulumi
          env:
@@ -137,10 +137,10 @@ jobs:
            echo "rds_port=$RDS_PORT" >> $GITHUB_OUTPUT
            echo "rds_database=$RDS_DATABASE" >> $GITHUB_OUTPUT
            echo "rds_username=$RDS_USERNAME" >> $GITHUB_OUTPUT
-      
-      - name: Install Goose CLI
-        run: go install github.com/pressly/goose/v3/cmd/goose@latest
-      
+       
+       - name: Install Goose CLI
+         run: go install github.com/pressly/goose/v3/cmd/goose@latest
+       
        - name: Wait for RDS to be available
          continue-on-error: true
          run: |
@@ -159,7 +159,7 @@ jobs:
            done
            echo "Warning: RDS failed to become available, but continuing..."
            exit 0
-      
+       
        - name: Run database migrations with Goose
          continue-on-error: true
          working-directory: ./internal/adapters/postgresql
@@ -170,7 +170,7 @@ jobs:
            fi
            
            goose postgres "host=${{ steps.get-rds-endpoint.outputs.rds_endpoint }} port=${{ steps.get-rds-endpoint.outputs.rds_port }} user=${{ steps.get-rds-endpoint.outputs.rds_username }} password=${{ secrets.RDS_PASSWORD }} dbname=${{ steps.get-rds-endpoint.outputs.rds_database }} sslmode=disable" up
-      
+       
        - name: Build and push Docker image
          continue-on-error: true
          run: |
@@ -186,7 +186,7 @@ jobs:
            docker build -t $ECR_REPO:latest -t $ECR_REPO:${{ github.sha }} .
            docker push $ECR_REPO:latest
            docker push $ECR_REPO:${{ github.sha }}
-      
+       
        - name: Update ECS service
          continue-on-error: true
          run: |
