@@ -59,6 +59,7 @@ func main() {
 			ecrOutput.ImageURI,
 			vpcOutput.PrivateSubnets,
 			securityGroups.ECSSecurityGroup.ID().ToStringOutput(),
+			rdsOutput.Endpoint,
 			loadBalancerOutput,
 		)
 		if err != nil {

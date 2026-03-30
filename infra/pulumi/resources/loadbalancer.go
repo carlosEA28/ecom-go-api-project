@@ -29,9 +29,14 @@ func CreateLoadBalancer(ctx *pulumi.Context, vpcID pulumi.StringOutput, publicSu
 
 	// Create Target Group
 	targetGroup, err2 := lb.NewTargetGroup(ctx, "lb", &lb.TargetGroupArgs{
-		Port:     pulumi.Int(8080),
-		Protocol: pulumi.String("HTTP"),
-		VpcId:    vpcID,
+		Port:       pulumi.Int(8080),
+		Protocol:   pulumi.String("HTTP"),
+		VpcId:      vpcID,
+		TargetType: pulumi.String("ip"),
+		HealthCheck: &lb.TargetGroupHealthCheckArgs{
+			Path:     pulumi.String("/health"),
+			Protocol: pulumi.String("HTTP"),
+		},
 		Tags: pulumi.StringMap{
 			"Name": pulumi.String("ecom-api-tg"),
 		},

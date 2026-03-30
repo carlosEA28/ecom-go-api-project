@@ -79,19 +79,39 @@ jobs:
         working-directory: infra/pulumi
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          PULUMI_STACK: ${{ secrets.PULUMI_STACK || 'dev' }}
+          PULUMI_STACK: ${{ secrets.PULUMI_STACK || 'dev-sa-east-1' }}
           AWS_REGION: ${{ env.AWS_REGION }}
         run: |
           pulumi login
-          pulumi stack select "$PULUMI_STACK" || pulumi stack init "$PULUMI_STACK"
-          pulumi config set aws:region "$AWS_REGION" --stack "$PULUMI_STACK"
+          pulumi cancel --yes --stack "$PULUMI_STACK" || true
+
+          if pulumi stack select "$PULUMI_STACK"; then
+            echo "Using existing stack: $PULUMI_STACK"
+            STACK_REGION="$(pulumi config get aws:region --stack "$PULUMI_STACK" || true)"
+            if [ -n "$STACK_REGION" ] && [ "$STACK_REGION" != "$AWS_REGION" ]; then
+              echo "::error::Stack '$PULUMI_STACK' is configured for region '$STACK_REGION', but workflow is using '$AWS_REGION'."
+              echo "::error::Use a new stack for region migration (for example: dev-sa-east-1)."
+              exit 1
+            fi
+          else
+            pulumi stack init "$PULUMI_STACK"
+            pulumi config set aws:region "$AWS_REGION" --stack "$PULUMI_STACK"
+          fi
+
+          PENDING_OPS="$(pulumi stack export --stack "$PULUMI_STACK" | python -c "import json,sys; print(len(json.load(sys.stdin).get('deployment', {}).get('pending_operations', [])))")"
+          if [ "$PENDING_OPS" -gt 0 ]; then
+            echo "::error::Stack '$PULUMI_STACK' has $PENDING_OPS pending operation(s)."
+            echo "::error::Run 'pulumi refresh --stack $PULUMI_STACK' manually once, then rerun this workflow."
+            exit 1
+          fi
+
           pulumi up --yes --stack "$PULUMI_STACK"
 
       - name: Read Pulumi outputs
         working-directory: infra/pulumi
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          PULUMI_STACK: ${{ secrets.PULUMI_STACK || 'dev' }}
+          PULUMI_STACK: ${{ secrets.PULUMI_STACK || 'dev-sa-east-1' }}
         run: |
           echo "ECR_REPOSITORY_URL=$(pulumi stack output ecrRepositoryUrl --stack "$PULUMI_STACK")" >> "$GITHUB_ENV"
           echo "ECS_CLUSTER_ARN=$(pulumi stack output ecsClusterArn --stack "$PULUMI_STACK")" >> "$GITHUB_ENV"

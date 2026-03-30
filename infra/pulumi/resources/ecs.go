@@ -3,7 +3,9 @@ package resources
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
+	"github.com/pulumi/pulumi-aws/sdk/v7/go/aws/cloudwatch"
 	"github.com/pulumi/pulumi-aws/sdk/v7/go/aws/ecs"
 	"github.com/pulumi/pulumi-aws/sdk/v7/go/aws/iam"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -34,15 +36,19 @@ func CreateECSFargateService(
 	imageURI pulumi.StringOutput,
 	ecsSubnetIDs pulumi.StringArrayOutput,
 	ecsSecurityGroupID pulumi.StringOutput,
+	rdsEndpoint pulumi.StringOutput,
 	lbOutput *LoadBalancerOutput,
 ) (*ECSServiceOutput, error) {
 	// NOTE: Update awslogs-region below if deploying to a different AWS region
 	// Supported values: us-east-1, sa-east-1, eu-west-1, ap-southeast-1, etc.
 	awsRegion := "sa-east-1"
 
-	// Log group creation is handled externally or via Pulumi import
-	// This avoids conflicts if the log group was created manually
-	// The ECS task definition references "ecom-api-logs" directly
+	logGroup, err := cloudwatch.NewLogGroup(ctx, "ecs-log-group", &cloudwatch.LogGroupArgs{
+		RetentionInDays: pulumi.Int(7),
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	// Create execution role for ECS tasks
 	executionRole, err := iam.NewRole(ctx, "ecs-execution-role", &iam.RoleArgs{
@@ -78,11 +84,25 @@ func CreateECSFargateService(
 		Cpu:                     pulumi.String("256"),
 		Memory:                  pulumi.String("512"),
 		ExecutionRoleArn:        executionRole.Arn,
-		ContainerDefinitions: imageURI.ApplyT(func(uri interface{}) string {
+		ContainerDefinitions: pulumi.All(imageURI, rdsEndpoint, logGroup.Name).ApplyT(func(args []interface{}) string {
+			uri := args[0].(string)
+			endpoint := args[1].(string)
+			logGroupName := args[2].(string)
+
+			host, _, found := strings.Cut(endpoint, ":")
+			if !found {
+				host = endpoint
+			}
+
+			dbConnString := fmt.Sprintf(
+				"host=%s port=5432 user=postgres password=postgres123! dbname=ecom sslmode=require",
+				host,
+			)
+
 			containers := []map[string]interface{}{
 				{
 					"name":      "ecom-api",
-					"image":     uri.(string),
+					"image":     uri,
 					"essential": true,
 					"portMappings": []map[string]interface{}{
 						{
@@ -91,10 +111,16 @@ func CreateECSFargateService(
 							"protocol":      "tcp",
 						},
 					},
+					"environment": []map[string]interface{}{
+						{
+							"name":  "GOOSE_DBSTRING",
+							"value": dbConnString,
+						},
+					},
 					"logConfiguration": map[string]interface{}{
 						"logDriver": "awslogs",
 						"options": map[string]interface{}{
-							"awslogs-group":         "ecom-api-logs",
+							"awslogs-group":         logGroupName,
 							"awslogs-region":        awsRegion,
 							"awslogs-stream-prefix": "ecs",
 						},
@@ -128,7 +154,7 @@ func CreateECSFargateService(
 			},
 		},
 		HealthCheckGracePeriodSeconds: pulumi.Int(300),
-	}, pulumi.DependsOn([]pulumi.Resource{lbOutput.LoadBalancer}))
+	}, pulumi.DependsOn([]pulumi.Resource{lbOutput.LoadBalancer, logGroup}))
 	if err != nil {
 		return nil, fmt.Errorf("error creating ECS service: %w", err)
 	}
