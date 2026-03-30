@@ -13,7 +13,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  AWS_REGION: us-east-1
+  AWS_REGION: sa-east-1
 
 jobs:
   test:

@@ -39,7 +39,7 @@ func CreateECSFargateService(
 ) (*ECSServiceOutput, error) {
 	// NOTE: Update awslogs-region below if deploying to a different AWS region
 	// Supported values: us-east-1, sa-east-1, eu-west-1, ap-southeast-1, etc.
-	awsRegion := "us-east-1"
+	awsRegion := "sa-east-1"
 
 	// Log group creation is handled externally or via Pulumi import
 	// This avoids conflicts if the log group was created manually
