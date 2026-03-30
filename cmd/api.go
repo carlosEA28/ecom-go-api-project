@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/jackc/pgx/v5"
 	repo "github.com/carlosEA28/ecom/internal/adapters/postgresql/sqlc"
 	"github.com/carlosEA28/ecom/internal/orders"
 	"github.com/carlosEA28/ecom/internal/products"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5"
 )
 
 func (app *application) mount() http.Handler {
