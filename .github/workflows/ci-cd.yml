@@ -49,10 +49,10 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Run tests
-        run: go test -v -cover ./...
-        env:
-          GOOSE_DBSTRING: host=localhost port=5432 user=postgres password=postgres dbname=ecom sslmode=disable
+       - name: Run tests
+         run: go test -v -cover ./...
+         env:
+           GOOSE_DBSTRING: host=localhost port=5432 user=postgres password=postgres dbname=ecom sslmode=disable
 
        - name: Run linter
          uses: golangci/golangci-lint-action@v3
@@ -60,7 +60,7 @@ jobs:
            version: v1.65.0
            args: --timeout=5m --out-format=colored-line-number
 
-      - name: Check formatting
+       - name: Check formatting
         run: |
           if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
             echo "Files need formatting:"
