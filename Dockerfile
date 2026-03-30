@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Builder stage
-FROM golang:1.25.3-alpine AS builder
+FROM golang:1.25.6-alpine AS builder
 
 WORKDIR /src
 
@@ -20,4 +20,6 @@ RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/server /usr/local/bin/server
 
 EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD ["/usr/local/bin/server", "-health"]
 ENTRYPOINT ["/usr/local/bin/server"]
