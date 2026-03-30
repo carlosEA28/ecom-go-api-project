@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/pulumi/pulumi-aws/sdk/v7/go/aws/cloudwatch"
 	"github.com/pulumi/pulumi-aws/sdk/v7/go/aws/ecs"
 	"github.com/pulumi/pulumi-aws/sdk/v7/go/aws/iam"
 	"github.com/pulumi/pulumi-awsx/sdk/v3/go/awsx/lb"
@@ -37,6 +38,15 @@ func CreateECSFargateService(
 	ecsSecurityGroupID pulumi.StringOutput,
 	loadBalancer *lb.ApplicationLoadBalancer,
 ) (*ECSServiceOutput, error) {
+	// Create CloudWatch log group for ECS task logs
+	logGroup, err := cloudwatch.NewLogGroup(ctx, "ecs-log-group", &cloudwatch.LogGroupArgs{
+		Name:            pulumi.String("ecom-api-logs"),
+		RetentionInDays: pulumi.Int(7),
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	// Create execution role for ECS tasks
 	executionRole, err := iam.NewRole(ctx, "ecs-execution-role", &iam.RoleArgs{
 		AssumeRolePolicy: pulumi.String(`{
@@ -121,7 +131,7 @@ func CreateECSFargateService(
 			},
 		},
 		HealthCheckGracePeriodSeconds: pulumi.Int(300),
-	}, pulumi.DependsOn([]pulumi.Resource{loadBalancer}))
+	}, pulumi.DependsOn([]pulumi.Resource{loadBalancer, logGroup}))
 	if err != nil {
 		return nil, fmt.Errorf("error creating ECS service: %w", err)
 	}
