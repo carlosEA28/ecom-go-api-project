@@ -10,17 +10,13 @@ type LoadBalancerOutput struct {
 	DNSName      pulumi.StringOutput
 }
 
-func CreateLoadBalancer(ctx *pulumi.Context, publicSubnetID pulumi.Output, lbSecurityGroupID pulumi.StringOutput) (*LoadBalancerOutput, error) {
+func CreateLoadBalancer(ctx *pulumi.Context, publicSubnetIDs pulumi.StringArrayOutput, lbSecurityGroupID pulumi.StringOutput) (*LoadBalancerOutput, error) {
 	loadBalancer, err := lb.NewApplicationLoadBalancer(ctx, "lb", &lb.ApplicationLoadBalancerArgs{
 		Listener: &lb.ListenerArgs{
 			Port:     pulumi.Int(80),
 			Protocol: pulumi.String("HTTP"),
 		},
-		SubnetIds: pulumi.StringArray{
-			publicSubnetID.ApplyT(func(id interface{}) string {
-				return id.(string)
-			}).(pulumi.StringOutput),
-		},
+		SubnetIds: publicSubnetIDs,
 		SecurityGroups: pulumi.StringArray{
 			lbSecurityGroupID,
 		},

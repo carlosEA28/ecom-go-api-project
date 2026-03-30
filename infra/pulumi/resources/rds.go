@@ -13,14 +13,10 @@ type RDSOutput struct {
 	Username     pulumi.StringOutput
 }
 
-func CreateRDS(ctx *pulumi.Context, rdsSubnetID pulumi.Output, rdsSecurityGroupID pulumi.StringOutput) (*RDSOutput, error) {
+func CreateRDS(ctx *pulumi.Context, privateSubnetIDs pulumi.StringArrayOutput, rdsSecurityGroupID pulumi.StringOutput) (*RDSOutput, error) {
 	// Criar DB Subnet Group para o RDS
 	dbSubnetGroup, err := rds.NewSubnetGroup(ctx, "rds-subnet-group", &rds.SubnetGroupArgs{
-		SubnetIds: pulumi.StringArray{
-			rdsSubnetID.ApplyT(func(id interface{}) string {
-				return id.(string)
-			}).(pulumi.StringOutput),
-		},
+		SubnetIds: privateSubnetIDs,
 	})
 	if err != nil {
 		return nil, err

@@ -26,13 +26,13 @@ func main() {
 			return fmt.Errorf("erro ao criar ECR: %w", err)
 		}
 
-		publicSubnetID := vpcOutput.PublicSubnets.Index(pulumi.Int(0))
+		// Use all public subnets for load balancer (multi-AZ)
+		// Use all private subnets for RDS and ECS (multi-AZ)
 		ecsSubnetID := vpcOutput.PrivateSubnets.Index(pulumi.Int(0))
-		rdsSubnetID := vpcOutput.PrivateSubnets.Index(pulumi.Int(1))
 
 		loadBalancerOutput, err := resources.CreateLoadBalancer(
 			ctx,
-			publicSubnetID,
+			vpcOutput.PublicSubnets,
 			securityGroups.LBSecurityGroup.ID().ToStringOutput(),
 		)
 		if err != nil {
@@ -41,7 +41,7 @@ func main() {
 
 		rdsOutput, err := resources.CreateRDS(
 			ctx,
-			rdsSubnetID,
+			vpcOutput.PrivateSubnets,
 			securityGroups.RDSSecurityGroup.ID().ToStringOutput(),
 		)
 		if err != nil {
@@ -67,9 +67,7 @@ func main() {
 
 		// Exports
 		ctx.Export("vpcId", vpcOutput.VPC.VpcId)
-		ctx.Export("publicSubnetId", publicSubnetID)
 		ctx.Export("ecsSubnetId", ecsSubnetID)
-		ctx.Export("rdsSubnetId", rdsSubnetID)
 
 		ctx.Export("ecrRepositoryUrl", resources.GetECRRepositoryUrl(ecrOutput))
 		ctx.Export("ecrImageUri", ecrOutput.ImageURI)
