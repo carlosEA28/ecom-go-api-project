@@ -138,7 +138,7 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
       - name: Setup Pulumi
-        uses: pulumi/setup-pulumi@v4
+        uses: pulumi/setup-pulumi@v3
         with:
           pulumi-version: latest
 
