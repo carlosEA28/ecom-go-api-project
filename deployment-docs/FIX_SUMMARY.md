@@ -41,6 +41,16 @@ The infrastructure deployment was failing with multi-AZ requirements not being m
 
 **Result:** Multi-AZ requirements satisfied ✓
 
+### 3. Fixed ECS task definition port mappings (Commit: 00c0c96)
+**Issue:** ECS task definition failed with "When networkMode=awsvpc, host and container ports must match"
+- Added missing `HostPort: 8080` to port mapping configuration
+- Updated `ecs.go`:
+  - Added explicit HostPort matching ContainerPort (8080)
+  - Pass all private subnets to ECS Fargate service (not just first one)
+  - Function now accepts `StringArrayOutput` instead of single subnet
+
+**Result:** ECS task definition now creates successfully ✓
+
 ## Infrastructure Architecture (Post-Fix)
 
 ```
@@ -117,10 +127,12 @@ VPC (10.0.0.0/16)
 | `infra/pulumi/main.go` | Pass all subnets to resources | Distribute across AZs |
 | `infra/pulumi/resources/loadbalancer.go` | Accept StringArrayOutput | ALB spans all public subnets |
 | `infra/pulumi/resources/rds.go` | Accept StringArrayOutput | RDS uses all private subnets |
+| `infra/pulumi/resources/ecs.go` | Add HostPort, accept StringArrayOutput | ECS scales across all AZs |
 
 ## Commits
 
 ```
+00c0c96 fix: ECS task definition port mappings and multi-AZ scaling
 9d92fb8 fix: Pass all subnets to ALB and RDS for true multi-AZ deployment
 1473e25 fix: Remove duplicate CreateVPC function and fix Pulumi type errors
 ```
