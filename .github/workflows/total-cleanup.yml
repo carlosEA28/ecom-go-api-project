@@ -1,0 +1,180 @@
+name: Total Cleanup
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: sa-east-1
+
+jobs:
+  total-cleanup:
+    name: Total Cleanup - Destroy Everything
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25.6'
+          cache: true
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Pulumi
+        run: |
+          curl -fsSL https://get.pulumi.com | sh
+          echo "$HOME/.pulumi/bin" >> $GITHUB_PATH
+
+      - name: Destroy Pulumi Stack
+        working-directory: ./infra/pulumi
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          PULUMI_STACK: ${{ secrets.PULUMI_STACK || 'dev' }}
+        run: |
+          pulumi stack select $PULUMI_STACK || echo "Stack does not exist"
+          pulumi destroy --yes --skip-preview || echo "Destroy failed or no resources"
+
+      - name: Remove Pulumi Stack
+        working-directory: ./infra/pulumi
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          PULUMI_STACK: ${{ secrets.PULUMI_STACK || 'dev' }}
+        run: |
+          pulumi stack rm $PULUMI_STACK --yes || echo "Stack already removed"
+
+      - name: Manual AWS Cleanup - sa-east-1
+        run: |
+          echo "=== Cleaning up sa-east-1 ==="
+          
+          # Delete ECS services and clusters
+          for cluster in $(aws ecs list-clusters --region $AWS_REGION --query 'clusterArns[*]' --output text); do
+            CLUSTER_NAME=$(echo $cluster | cut -d'/' -f2)
+            echo "Processing cluster: $CLUSTER_NAME"
+            for service in $(aws ecs list-services --cluster $CLUSTER_NAME --region $AWS_REGION --query 'serviceArns[*]' --output text); do
+              echo "Deleting service: $service"
+              aws ecs delete-service --cluster $CLUSTER_NAME --service $service --force --region $AWS_REGION 2>&1 || true
+            done
+            sleep 2
+            echo "Deleting cluster: $CLUSTER_NAME"
+            aws ecs delete-cluster --cluster $CLUSTER_NAME --region $AWS_REGION 2>&1 || true
+          done
+
+          # Delete RDS instances
+          for db in $(aws rds describe-db-instances --region $AWS_REGION --query 'DBInstances[*].DBInstanceIdentifier' --output text); do
+            echo "Deleting RDS: $db"
+            aws rds delete-db-instance --db-instance-identifier $db --skip-final-snapshot --region $AWS_REGION 2>&1 || true
+          done
+
+          # Delete RDS subnet groups
+          for sg in $(aws rds describe-db-subnet-groups --region $AWS_REGION --query 'DBSubnetGroups[*].DBSubnetGroupName' --output text); do
+            echo "Deleting RDS subnet group: $sg"
+            aws rds delete-db-subnet-group --db-subnet-group-name $sg --region $AWS_REGION 2>&1 || true
+          done
+
+          # Delete Load Balancers
+          for lb in $(aws elbv2 describe-load-balancers --region $AWS_REGION --query 'LoadBalancers[*].LoadBalancerArn' --output text); do
+            echo "Deleting load balancer: $lb"
+            aws elbv2 delete-load-balancer --load-balancer-arn $lb --region $AWS_REGION 2>&1 || true
+          done
+
+          # Delete VPCs with 10.0.0.0/16
+          for vpc in $(aws ec2 describe-vpcs --region $AWS_REGION --filters "Name=cidr,Values=10.0.0.0/16" --query 'Vpcs[*].VpcId' --output text); do
+            echo "Processing VPC: $vpc"
+            
+            # Delete subnets
+            for subnet in $(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$vpc" --region $AWS_REGION --query 'Subnets[*].SubnetId' --output text); do
+              echo "Deleting subnet: $subnet"
+              aws ec2 delete-subnet --subnet-id $subnet --region $AWS_REGION 2>&1 || true
+            done
+
+            # Delete NAT Gateways
+            for nat in $(aws ec2 describe-nat-gateways --region $AWS_REGION --query "NatGateways[?VpcId=='$vpc' && State!='deleted'].NatGatewayId" --output text); do
+              echo "Deleting NAT Gateway: $nat"
+              aws ec2 delete-nat-gateway --nat-gateway-id $nat --region $AWS_REGION 2>&1 || true
+            done
+
+            # Delete IGWs
+            for igw in $(aws ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$vpc" --region $AWS_REGION --query 'InternetGateways[*].InternetGatewayId' --output text); do
+              echo "Detaching IGW: $igw"
+              aws ec2 detach-internet-gateway --internet-gateway-id $igw --vpc-id $vpc --region $AWS_REGION 2>&1 || true
+              echo "Deleting IGW: $igw"
+              aws ec2 delete-internet-gateway --internet-gateway-id $igw --region $AWS_REGION 2>&1 || true
+            done
+
+            # Delete route tables
+            for rt in $(aws ec2 describe-route-tables --filters "Name=vpc-id,Values=$vpc" --region $AWS_REGION --query 'RouteTables[?Associations[0].Main!=`true`].RouteTableId' --output text); do
+              echo "Deleting route table: $rt"
+              aws ec2 delete-route-table --route-table-id $rt --region $AWS_REGION 2>&1 || true
+            done
+
+            # Delete security groups
+            for sg in $(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$vpc" --region $AWS_REGION --query 'SecurityGroups[?GroupName!=`default`].GroupId' --output text); do
+              echo "Deleting security group: $sg"
+              aws ec2 delete-security-group --group-id $sg --region $AWS_REGION 2>&1 || true
+            done
+
+            sleep 3
+            echo "Deleting VPC: $vpc"
+            aws ec2 delete-vpc --vpc-id $vpc --region $AWS_REGION 2>&1 || true
+          done
+
+          # Release Elastic IPs
+          for eip in $(aws ec2 describe-addresses --region $AWS_REGION --query 'Addresses[*].AllocationId' --output text); do
+            echo "Releasing EIP: $eip"
+            aws ec2 release-address --allocation-id $eip --region $AWS_REGION 2>&1 || true
+          done
+
+          # Delete ECR repositories
+          for repo in $(aws ecr describe-repositories --region $AWS_REGION --query 'repositories[*].repositoryName' --output text); do
+            echo "Deleting ECR: $repo"
+            aws ecr delete-repository --repository-name $repo --force --region $AWS_REGION 2>&1 || true
+          done
+
+          # Delete CloudWatch log groups
+          for log_group in $(aws logs describe-log-groups --region $AWS_REGION --query 'logGroups[*].logGroupName' --output text); do
+            echo "Deleting log group: $log_group"
+            aws logs delete-log-group --log-group-name $log_group --region $AWS_REGION 2>&1 || true
+          done
+
+          echo "✅ sa-east-1 cleanup complete"
+
+      - name: Cleanup us-east-1 (if needed)
+        run: |
+          echo "=== Cleaning up us-east-1 (orphaned resources) ==="
+          
+          # Delete orphaned ECR
+          for repo in $(aws ecr describe-repositories --region us-east-1 --query 'repositories[?contains(repositoryName, `ecom`)].repositoryName' --output text); do
+            echo "Deleting ECR: $repo"
+            aws ecr delete-repository --repository-name $repo --force --region us-east-1 2>&1 || true
+          done
+          
+          # Delete orphaned log groups
+          for log_group in $(aws logs describe-log-groups --region us-east-1 --query 'logGroups[?contains(logGroupName, `ecom`)].logGroupName' --output text); do
+            echo "Deleting log group: $log_group"
+            aws logs delete-log-group --log-group-name $log_group --region us-east-1 2>&1 || true
+          done
+          
+          echo "✅ us-east-1 cleanup complete"
+
+      - name: Final Verification
+        run: |
+          echo "=== Verifying Cleanup ==="
+          
+          echo "VPCs in sa-east-1 with 10.0.0.0/16:"
+          aws ec2 describe-vpcs --region $AWS_REGION --filters "Name=cidr,Values=10.0.0.0/16" --query 'Vpcs[*].VpcId' --output text || echo "None found (GOOD)"
+          
+          echo "ECR repos in sa-east-1:"
+          aws ecr describe-repositories --region $AWS_REGION --query 'repositories[*].repositoryName' --output text || echo "None found (GOOD)"
+          
+          echo "ECS clusters in sa-east-1:"
+          aws ecs list-clusters --region $AWS_REGION --query 'clusterArns[*]' --output text || echo "None found (GOOD)"
+          
+          echo "✅ Cleanup verification complete"
