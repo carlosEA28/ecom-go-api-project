@@ -17,9 +17,9 @@ func CreateVPC(ctx *pulumi.Context) (*VPCOutput, error) {
 	vpc, err := awsxec2.NewVpc(ctx, "vpc", &awsxec2.VpcArgs{
 		CidrBlock: pulumi.StringRef("10.0.0.0/16"),
 		AvailabilityZoneNames: []string{
-			"us-east-1a",
-			"us-east-1b",
-			"us-east-1c",
+			"sa-east-1a",
+			"sa-east-1b",
+			"sa-east-1c",
 		},
 		NatGateways: &awsxec2.NatGatewayConfigurationArgs{
 			Strategy: awsxec2.NatGatewayStrategyOnePerAz,
