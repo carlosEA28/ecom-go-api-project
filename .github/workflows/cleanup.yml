@@ -1,0 +1,75 @@
+name: Cleanup Stack
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+env:
+  AWS_REGION: sa-east-1
+
+jobs:
+  cleanup:
+    name: Cleanup Pulumi Stack
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25.6'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Pulumi
+        run: |
+          curl -fsSL https://get.pulumi.com | sh
+          echo "$HOME/.pulumi/bin" >> $GITHUB_PATH
+
+      - name: Destroy Pulumi Stack
+        working-directory: ./infra/pulumi
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          PULUMI_STACK: ${{ secrets.PULUMI_STACK || 'dev' }}
+        run: |
+          pulumi stack select $PULUMI_STACK
+          pulumi destroy --yes --skip-preview || echo "Destroy failed or no resources to destroy"
+
+      - name: Remove Stack
+        working-directory: ./infra/pulumi
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          PULUMI_STACK: ${{ secrets.PULUMI_STACK || 'dev' }}
+        run: |
+          pulumi stack rm $PULUMI_STACK --yes || echo "Stack already removed"
+
+      - name: Manual AWS Cleanup (sa-east-1)
+        run: |
+          echo "Cleaning up remaining AWS resources in sa-east-1..."
+          
+          # Delete VPCs
+          for vpc in $(aws ec2 describe-vpcs --region $AWS_REGION --query 'Vpcs[?CidrBlock==`10.0.0.0/16`].VpcId' --output text); do
+            echo "Deleting VPC: $vpc"
+            for subnet in $(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$vpc" --region $AWS_REGION --query 'Subnets[*].SubnetId' --output text); do
+              aws ec2 delete-subnet --subnet-id "$subnet" --region $AWS_REGION 2>&1 || true
+            done
+            for igw in $(aws ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$vpc" --region $AWS_REGION --query 'InternetGateways[*].InternetGatewayId' --output text); do
+              aws ec2 detach-internet-gateway --internet-gateway-id "$igw" --vpc-id "$vpc" --region $AWS_REGION 2>&1 || true
+              aws ec2 delete-internet-gateway --internet-gateway-id "$igw" --region $AWS_REGION 2>&1 || true
+            done
+            aws ec2 delete-vpc --vpc-id "$vpc" --region $AWS_REGION 2>&1 || true
+          done
+          
+          # Delete NAT Gateways
+          for nat in $(aws ec2 describe-nat-gateways --region $AWS_REGION --query 'NatGateways[?State!=`deleted`].NatGatewayId' --output text); do
+            echo "Deleting NAT Gateway: $nat"
+            aws ec2 delete-nat-gateway --nat-gateway-id "$nat" --region $AWS_REGION 2>&1 || true
+          done
+          
+          echo "✅ Cleanup complete"
