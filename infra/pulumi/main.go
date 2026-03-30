@@ -78,7 +78,7 @@ func main() {
 		ctx.Export("rdsUsername", rdsOutput.Username)
 
 		ctx.Export("ecsClusterArn", ecsClusterOutput.Cluster.Arn)
-		ctx.Export("ecsServiceArn", ecsServiceOutput.Service.Service.Arn())
+		ctx.Export("ecsServiceArn", ecsServiceOutput.Service.Arn)
 
 		return nil
 
