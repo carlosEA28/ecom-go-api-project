@@ -16,11 +16,10 @@ env:
   AWS_REGION: us-east-1
 
 jobs:
-  # Job 1: Testes e validação
   test:
     name: Test & Lint
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:16-alpine
@@ -49,18 +48,18 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-       - name: Run tests
-         run: go test -v -cover ./...
-         env:
-           GOOSE_DBSTRING: host=localhost port=5432 user=postgres password=postgres dbname=ecom sslmode=disable
+      - name: Run tests
+        run: go test -v -cover ./...
+        env:
+          GOOSE_DBSTRING: host=localhost port=5432 user=postgres password=postgres dbname=ecom sslmode=disable
 
-       - name: Run linter
-         uses: golangci/golangci-lint-action@v3
-         with:
-           version: v1.65.0
-           args: --timeout=5m --out-format=colored-line-number
+      - name: Run linter
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.65.0
+          args: --timeout=5m --out-format=colored-line-number
 
-       - name: Check formatting
+      - name: Check formatting
         run: |
           if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
             echo "Files need formatting:"
@@ -68,13 +67,12 @@ jobs:
             exit 1
           fi
 
-  # Job 2: Build de imagem Docker
   build:
     name: Build Docker Image
     runs-on: ubuntu-latest
     needs: test
     if: github.event_name == 'push'
-    
+
     permissions:
       contents: read
       packages: write
@@ -115,13 +113,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Job 3: Deploy para AWS com Pulumi
   deploy:
     name: Deploy to AWS
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -167,7 +164,7 @@ jobs:
         run: |
           pulumi stack select $PULUMI_STACK
           pulumi up --yes --skip-preview
-          
+
       - name: Export outputs
         working-directory: ./infra/pulumi
         env:
